@@ -8,14 +8,16 @@ package stateMachine
 		public var exit:Function;
 		public var _parent:State;
 		public var children:Array;
+		public var data:Object;
 		
-		public function State(name:String, from:Object = null, enter:Function = null, exit:Function = null, parent:State = null)
+		public function State(name:String, from:Object = null, enter:Function = null, exit:Function = null, data:Object = null, parent:State = null)
 		{
 			this.name = name;
 			if (!from) from = "*";
 			this.from = from;
 			this.enter = enter;
 			this.exit = exit;
+			this.data = data;
 			this.children = [];
 			if (parent)
 			{

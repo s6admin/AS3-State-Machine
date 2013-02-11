@@ -88,15 +88,15 @@ package stateMachine
 					parentStates = _states[_state].parents
 					for(var j:int = _states[_state].parents.length-1; j>=0; j--){
 						if(parentStates[j].enter){
-							_callbackEvent.currentState = parentStates[j].name
-							parentStates[j].enter.call(null,_callbackEvent)
+							_callbackEvent.currentState = parentStates[j].name;
+							parentStates[j].enter.call(null,_callbackEvent);
 						}
 					}
 				}
 			
 				if(_states[_state].enter){
-					_callbackEvent.currentState = _state
-					_states[_state].enter.call(null,_callbackEvent)
+					_callbackEvent.currentState = _state;
+					_states[_state].enter.call(null,_callbackEvent);
 				}
 				_outEvent = new StateMachineEvent(StateMachineEvent.TRANSITION_COMPLETE);
 				_outEvent.toState = stateName;
@@ -132,7 +132,10 @@ package stateMachine
 		**/
 		public function canChangeStateTo(stateName:String):Boolean
 		{
-			return (stateName!=_state && (_states[stateName].from.indexOf(_state)!=-1 || _states[stateName].from == "*"));
+			//return (stateName!=_state && (_states[stateName].from.indexOf(_state)!=-1 || _states[stateName].from == "*"));
+			
+			// StageSelectStudios, avoids error when checking against stateNames that do not exist
+			return (stateName != _state && (_states[stateName] != null && (_states[stateName].from.indexOf(_state) != -1 || _states[stateName].from == "*")));  
 		}
 
 		/**
@@ -174,24 +177,24 @@ package stateMachine
 		 * Changing states will call the exit callback for the exiting state and enter callback for the entering state
 		 * @param stateTo	The name of the state to transition to
 		**/
-		public function changeState(stateTo:String):void
+		public function changeState(stateTo:String):Boolean
 		{
 			// If there is no state that maches stateTo
 			if (!(stateTo in _states)){
 				trace("[StateMachine]",id,"Cannot make transition: State "+ stateTo +" is not defined");
-				return;
+				return false;
 			}
 			
 			// If current state is not allowed to make this transition
 			if(!canChangeStateTo(stateTo))
 			{
-				trace("[StateMachine]",id,"Transition to "+ stateTo +" denied");
+				//trace("[StateMachine]",id,"Transition to "+ stateTo +" denied");
 				_outEvent = new StateMachineEvent(StateMachineEvent.TRANSITION_DENIED);
 				_outEvent.fromState = _state;
 				_outEvent.toState = stateTo;
 				_outEvent.allowedStates = _states[stateTo].from;
 				dispatchEvent(_outEvent);
-				return;
+				return false;
 			}
 			
 			// call exit and enter callbacks (if they exits)
@@ -240,13 +243,15 @@ package stateMachine
 					_states[_state].enter.call(null,_enterCallbackEvent);
 				}
 			}
-			trace("[StateMachine]",id,"State Changed to " + _state);
+			//trace("[StateMachine]",id,"State Changed to " + _state);
 			
 			// Transition is complete. dispatch TRANSITION_COMPLETE
 			_outEvent = new StateMachineEvent(StateMachineEvent.TRANSITION_COMPLETE);
 			_outEvent.fromState = oldState ;
 			_outEvent.toState = stateTo;
 			dispatchEvent(_outEvent);
+			
+			return true;
 		}
 	}
 }
